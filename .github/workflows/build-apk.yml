@@ -8,6 +8,9 @@ on:
   workflow_dispatch:
 
 jobs:
+  # ============================
+  # Android APK
+  # ============================
   build:
     name: Build Android APK
     runs-on: ubuntu-latest
@@ -46,4 +49,43 @@ jobs:
         with:
           name: flutter-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+  # ============================
+  # iOS IPA
+  # ============================
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.48.0-0.1.pre'
+          channel: master
+          cache: true
+
+      - name: Show Flutter version
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build iOS IPA
+        run: flutter build ipa --release --no-codesign
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-release-ipa
+          path: build/ios/ipa/*.ipa
           retention-days: 30
